@@ -9,6 +9,7 @@
      * -i <inputFile> : input file to read the array from (default: /dev/null)
      * Example: ./PrefixSumSerial -s 100 -r 1 -f prefixSum -o output.txt -i input.txt
      * Instructor: Dr. Jeffery Bush
+     * compile with: gcc-13 -Wall -O3 -march=native PrefixSumSerial.c -o PrefixSumSerial -lm
      * Authors: Yousuf Kanan and Derek Allmon
 */
 #include <stdio.h>
@@ -31,6 +32,7 @@ void prefixMult(double *arr, int size) {
 void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, void (**function)(double *, int), char **outputFile, char **inputFile) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-s") == 0 && i + 1 < argc) {
+            
             *size = atoll(argv[++i]);
         } else if (strcmp(argv[i], "-r") == 0 && i + 1 < argc) {
             *seed = (unsigned int)atoi(argv[++i]);
@@ -71,7 +73,8 @@ double executeFunction(double *arr, int size, void (*function)(double *, int)) {
     clock_gettime(CLOCK_MONOTONIC, &start);
     function(arr, size);
     clock_gettime(CLOCK_MONOTONIC, &end);
-    return (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+    //cpu time used in milliseconds
+    return (end.tv_sec - start.tv_sec) * 1000 + (end.tv_nsec - start.tv_nsec) / 1000000.0;
 }
 
 void writeResultsToFile(const char *filename, double *arr, int size) {
@@ -108,7 +111,7 @@ int main(int argc, char **argv) {
     writeResultsToFile(inputFile, arr, size);
 
     double cpu_time_used = executeFunction(arr, size, function);
-    printf("Time taken: %f seconds\n", cpu_time_used);
+    printf("Time taken: %f milliseconds\n", cpu_time_used);
     
     printf("Output file: %s\n", outputFile);
     writeResultsToFile(outputFile, arr, size);
