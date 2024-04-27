@@ -14,6 +14,7 @@
  * Exameple: ./PrefixSumShared -s 100 -r 1 -f prefixSum -o output.txt -i input.txt -t 8
  * Authors: Yousuf Kanan and Derek Allmon
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

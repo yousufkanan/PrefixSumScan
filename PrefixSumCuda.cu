@@ -34,100 +34,65 @@
 //Cuda kernal for up-sweep phase of the prefix sum
 // each thread calculates the sum of the elements in its block stored in shared memory
 // reduction: performs a binary tree reduction on the shared memory array so that the last element of the array contains the sum of all elements in the block
-__global__ void prefixSumKernel(int *data, int n) {
-    extern __shared__ int temp[];
+// Cuda kernel for computing the prefix sum using the up-sweep and down-sweep phases
+template <typename T>
+__global__ void prefixSumKernel(T *data, int n) {
+    extern __shared__ T shared[];
     int tid = threadIdx.x;
     int idx = blockIdx.x * blockDim.x + tid;
 
-    if (idx < n) temp[tid] = data[idx];
-    else temp[tid] = 0;
+    // Load data into shared memory
+    if (idx < n) shared[tid] = data[idx];
+    else shared[tid] = 0;
 
     __syncthreads();
 
-    // Upsweep (reduce) phase
+    // Up-sweep phase
     for (int stride = 1; stride < blockDim.x; stride *= 2) {
         int index = (tid + 1) * stride * 2 - 1;
         if (index < blockDim.x)
-            temp[index] += temp[index - stride];
+            shared[index] += shared[index - stride];
         __syncthreads();
     }
 
-    // Downsweep (scan) phase
+    // Down-sweep phase
     for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
+        __syncthreads();
         int index = (tid + 1) * stride * 2 - 1;
         if (index + stride < blockDim.x) {
-            temp[index + stride] += temp[index];
+            shared[index + stride] += shared[index];
         }
-        __syncthreads();
     }
-
-    if (idx < n) data[idx] = temp[tid];
-}
-
-
-__global__ void prefixMultKernel(int *data, int n) {
-    extern __shared__ int temp[];
-    int tid = threadIdx.x;
-    int idx = blockIdx.x * blockDim.x + tid;
-
-    if (idx < n) temp[tid] = data[idx];
-    else temp[tid] = 1;
-
     __syncthreads();
 
-    // Upsweep (reduce) phase for multiplication
-    for (int stride = 1; stride < blockDim.x; stride *= 2) {
-        int index = (tid + 1) * stride * 2 - 1;
-        if (index < blockDim.x)
-            temp[index] *= temp[index - stride];
-        __syncthreads();
-    }
-
-    // Downsweep (scan) phase for multiplication
-    for (int stride = blockDim.x / 2; stride > 0; stride /= 2) {
-        int index = (tid + 1) * stride * 2 - 1;
-        if (index + stride < blockDim.x) {
-            temp[index + stride] *= temp[index];
-        }
-        __syncthreads();
-    }
-
-    if (idx < n) data[idx] = temp[tid];
+    // Write results back to global memory
+    if (idx < n) data[idx] = shared[tid];
 }
-
 double *initializeArray(int size, unsigned int seed) {
-    double *arr = (double *)malloc(size * sizeof(double));
-    if (!arr) {
-        std::cerr << "Memory allocation failed\n";
-        exit(1);
-    }
+    double *arr = new double[size];
     srand(seed);
     for (int i = 0; i < size; i++) {
-        arr[i] = (double)rand() / (double)RAND_MAX * 2;
+        arr[i] = static_cast<double>(rand()) / RAND_MAX * 2;
     }
     return arr;
 }
 
 // argument parsing function: -s <size> -r <seed> -f <function> -o <outputFile> -i <inputFile> 
-void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, bool *doSum, char **outputFile, char **inputFile) {
+void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, char **outputFile) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-s") == 0 && i + 1 < argc) {
             *size = atoll(argv[++i]);
         } else if (strcmp(argv[i], "-r") == 0 && i + 1 < argc) {
             *seed = (unsigned int)atoi(argv[++i]);
-        } else if (strcmp(argv[i], "-f") == 0 && i + 1 < argc) {
-            *doSum = (strcmp(argv[i + 1], "sum") == 0);
-            i++;
         } else if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
             *outputFile = argv[++i];
-        } else if (strcmp(argv[i], "-i") == 0 && i + 1 < argc) {
-            *inputFile = argv[++i];
         } else {
             std::cerr << "Unknown option or missing argument: " << argv[i] << std::endl;
             exit(1);
         }
     }
 }
+
 
 
 int main(int argc, char **argv) {
@@ -165,8 +130,26 @@ int main(int argc, char **argv) {
     cudaEventElapsedTime(&milliseconds, start, stop);
     std::cout << "Execution time: " << milliseconds << " ms" << std::endl;
 
-    cudaMemcpy(arr, d_arr, size * sizeof(int), cudaMemcpyDeviceToHost);
+    // Allocate memory to store the total sum on the host
+    int *totalSum;  // Use a pointer since cudaMallocHost requires a pointer to a pointer
+    cudaMallocHost((void**)&totalSum, sizeof(int));  // Correctly allocate pinned memory
+
+    if (doSum) {
+        prefixSumKernel<<<numBlocks, numThreadsPerBlock, numThreadsPerBlock * sizeof(int)>>>(d_arr, size);
+    } else {
+        prefixMultKernel<<<numBlocks, numThreadsPerBlock, numThreadsPerBlock * sizeof(int)>>>(d_arr, size); 
+    }
+
+    cudaEventRecord(stop);
+    cudaEventSynchronize(stop);
+
+    float milliseconds = 0;
+    cudaEventElapsedTime(&milliseconds, start, stop);
+    std::cout << "Execution time: " << milliseconds << " ms" << std::endl;
+
+    cudaMemcpy(totalSum, d_arr, sizeof(int), cudaMemcpyDeviceToHost);  // Corrected to use totalSum
     cudaFree(d_arr);
+    cudaFreeHost(totalSum);  // Correctly free the pinned memory
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
 
@@ -174,12 +157,9 @@ int main(int argc, char **argv) {
         std::ofstream out(outputFile);
         for (int i = 0; i < size; i++) {
             out << arr[i] << std::endl;
-        }
+     }
         out.close();
-    }
-
-    free(arr);
-
-    return 0;
 }
+
+free(arr);
 

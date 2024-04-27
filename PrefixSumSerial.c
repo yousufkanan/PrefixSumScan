@@ -12,6 +12,7 @@
      * compile with: gcc-13 -Wall -O3 -march=native PrefixSumSerial.c -o PrefixSumSerial -lm
      * Authors: Yousuf Kanan and Derek Allmon
 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -117,5 +118,6 @@ int main(int argc, char **argv) {
     writeResultsToFile(outputFile, arr, size);
 
     free(arr);
+    
     return 0;
 }
