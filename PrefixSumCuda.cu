@@ -96,13 +96,11 @@ void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, 
 
 
 int main(int argc, char **argv) {
-    long long size = 4194304;  // default size
-    unsigned int seed = (unsigned int)time(NULL);
-    bool doSum = true;
-    char *outputFile = NULL;
-    char *inputFile = NULL;
+     long long size = 4194304;  // default size
+    unsigned int seed = static_cast<unsigned int>(time(nullptr));
+    char *outputFile = nullptr;
 
-    parseArguments(argc, argv, &size, &seed, &doSum, &outputFile, &inputFile);
+    parseArguments(argc, argv, &size, &seed, &outputFile);
 
     double *arr = initializeArray(size, seed);
     int *d_arr;
@@ -117,11 +115,7 @@ int main(int argc, char **argv) {
     cudaEventCreate(&stop);
     cudaEventRecord(start);
 
-    if (doSum) {
-        prefixSumKernel<<<numBlocks, numThreadsPerBlock, numThreadsPerBlock * sizeof(int)>>>(d_arr, size);
-    } else {
-        prefixMultKernel<<<numBlocks, numThreadsPerBlock, numThreadsPerBlock * sizeof(int)>>>(d_arr, size);
-    }
+    prefixSumKernel<<<numBlocks, numThreadsPerBlock, numThreadsPerBlock * sizeof(int)>>>(d_arr, size);
 
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
@@ -131,35 +125,7 @@ int main(int argc, char **argv) {
     std::cout << "Execution time: " << milliseconds << " ms" << std::endl;
 
     // Allocate memory to store the total sum on the host
-    int *totalSum;  // Use a pointer since cudaMallocHost requires a pointer to a pointer
-    cudaMallocHost((void**)&totalSum, sizeof(int));  // Correctly allocate pinned memory
-
-    if (doSum) {
-        prefixSumKernel<<<numBlocks, numThreadsPerBlock, numThreadsPerBlock * sizeof(int)>>>(d_arr, size);
-    } else {
-        prefixMultKernel<<<numBlocks, numThreadsPerBlock, numThreadsPerBlock * sizeof(int)>>>(d_arr, size); 
-    }
-
-    cudaEventRecord(stop);
-    cudaEventSynchronize(stop);
-
-    float milliseconds = 0;
-    cudaEventElapsedTime(&milliseconds, start, stop);
-    std::cout << "Execution time: " << milliseconds << " ms" << std::endl;
-
-    cudaMemcpy(totalSum, d_arr, sizeof(int), cudaMemcpyDeviceToHost);  // Corrected to use totalSum
-    cudaFree(d_arr);
-    cudaFreeHost(totalSum);  // Correctly free the pinned memory
-    cudaEventDestroy(start);
-    cudaEventDestroy(stop);
-
-    if (outputFile) {
-        std::ofstream out(outputFile);
-        for (int i = 0; i < size; i++) {
-            out << arr[i] << std::endl;
-     }
-        out.close();
+    int totalSum;
+    
 }
-
-free(arr);
 
