@@ -10,119 +10,30 @@
 #include <math.h>
 #include <omp.h>
 
-void prefixSumShared(double *arr, int size, int numThreads) {
-/*
-    #pragma omp simd reduction (inscan, +: a)
-    for (i = 0; i < 64; i++) {
-    int t = a;
-
-    d[i] = t;
-    #pragma omp scan inclusive (a)
-    int u = c[i];
-    a += u;
-    }
-    */
-    double* output = (double*)malloc(size * sizeof(double));
-    if (output == NULL) {
-        // Handle memory allocation failure if needed
-        return;
-    }
+#include <stdio.h>
+#define N 100
 
 
-}
-
-
-void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, void (**function)(double *, int, int), char **outputFile, char **inputFile, int *threads)
+int main(void)
 {
-     for (int i = 1; i < argc; i++){
-          if (strcmp(argv[i], "-s") == 0 && i + 1 < argc) {
-               *size = atoll(argv[++i]);
-          }
-          if (strcmp(argv[i], "-r") == 0 && i + 1 < argc){
-               *seed = (unsigned int)atoi(argv[++i]);
-          }
-          if (strcmp(argv[i], "-f") == 0 && i + 1 < argc) {
-               if (strcmp(argv[i + 1], "prefixMult") == 0) {
-                    *function = prefixMultShared;
-               }
-               else if (strcmp(argv[i + 1], "prefixSum") == 0) {
-                    *function = prefixSumShared;
-               }
-               i++;
-          }
-          if (strcmp(argv[i], "-o") == 0 && i + 1 < argc) {
-               *outputFile = argv[++i];
-          }
-          if (strcmp(argv[i], "-i") == 0 && i + 1 < argc) {
-               *inputFile = argv[++i];
-          }
-          if (strcmp(argv[i], "-t") == 0 && i + 1 < argc){
-               *threads = atoi(argv[++i]);
-          }
-     }
-}
+     int a[N], b[N];
+     int x = 0;
+     // initialization
+     for (int k = 0; k < N; k++)
+          a[k] = k + 1;
 
-double *initializeArray(int size, unsigned int seed) {
-    double *arr = (double *)malloc(size * sizeof(double));
-    if (!arr) {
-        fprintf(stderr, "Memory allocation failed\n");
-        exit(1);
-    }
-    srand(seed);
-    for (int i = 0; i < size; i++) {
-          arr[i] = (double)rand() / (double)RAND_MAX * 2;
-      //    arr[i] = i;
-    }
-    return arr;
-}
-
-void writeOutputFile(double *arr, long long size, char *outputFile)
-{
-     if (strcmp(outputFile, "/dev/null") == 0)
-     {
-          return;
+     // a[k] is included in the computation of producing results in b[k]
+     #pragma omp parallel for simd reduction(inscan,+: x)
+     for (int k = 0; k < N; k++) {
+     x += a[k];
+     #pragma omp scan inclusive(x)
+     b[k] = x;
      }
-     FILE *file = fopen(outputFile, "w");
-     if (!file)
-     {
-          fprintf(stderr, "Failed to open output file\n");
-          exit(1);
-     }
-     for (int i = 0; i < size; i++)
-     {
-          fprintf(file, "%lf\n", arr[i]);
-     }
-     fclose(file);
-}
 
-int main(int argc, char **argv)
-{
-     long long size = 4194304;
-     unsigned int seed = (unsigned int)time(NULL);
-     void (*function)(double *, int, int) = prefixSumShared;
-     char *outputFile = "/dev/null";
-     char *inputFile = "/dev/null";
-     int threads = 8;
-     parseArguments(argc, argv, &size, &seed, &function, &outputFile, &inputFile, &threads);
-     
-   //  printf("Size: %lld\n", size);
- //    printf("Function: %s\n", function == prefixSumShared ? "prefixSum" : "prefixMult");
-     //print the number of threads
-     omp_set_num_threads(threads);
-     #define num_threads threads
-     printf("Threads: %d\n", threads);
-     double *arr = initializeArray(size, seed);
-  //   printf("Input file: %s\n", inputFile);
-     writeOutputFile(arr, size, inputFile);
+     for (int k = 0; k < N; k++)
+          printf("%d, ", b[k]);
+ // 5050, 1 3 6
 
-     double start = omp_get_wtime();
-     function(arr, size, num_threads);
-     double end = omp_get_wtime();
-     // do time and size on the same line 
-    // printf("Time: %f milliseconds \n", (end - start) * 1000.0);
-     printf("%llu , %f \n", size, (end - start) * 1000.0);   
-  //   printf("Output file: %s\n", outputFile);
-     writeOutputFile(arr, size, outputFile);
-     free(arr);
-     return 0;
-}
+ return 0;
+ }
+ //COMPILE with gcc-13 -O3 -fopenmp -march=native PrefixSumSharedOpenMPBuiltin.c -o PrefixSumSharedOpenMPBuiltin -lm
