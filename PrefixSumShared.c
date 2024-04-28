@@ -128,6 +128,9 @@ int main(int argc, char **argv)
      double end = omp_get_wtime();
      printf("Time: %f milliseconds \n", (end - start) * 1000.0);
      printf("Output file: %s\n", outputFile);
+     //print size and time on one line without text
+     printf("%lld %f\n", size, (end - start) * 1000.0);
+
      writeOutputFile(arr, size, outputFile);
      free(arr);
      return 0;

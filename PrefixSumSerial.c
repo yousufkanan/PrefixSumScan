@@ -143,20 +143,23 @@ int main(int argc, char **argv) {
 
     parseArguments(argc, argv, &size, &seed, &function, &outputFile, &inputFile);
 
-    printf("Size: %lld\n", size);
-    printf("Function: %s\n", function == prefixSum ? "prefixSum" : "prefixMult");
+    //printf("Size: %lld\n", size);
+    // printf("Function: %s\n", function == prefixSum ? "prefixSum" : "prefixMult");
   
     double *arr = initializeArray(size, seed);
 
       
-    printf("Input file: %s\n", inputFile);
+   // printf("Input file: %s\n", inputFile);
     writeResultsToFile(inputFile, arr, size);
 
     double cpu_time_used = executeFunction(arr, size, function);
-    printf("Time taken: %f milliseconds\n", cpu_time_used);
+    // printf("Time taken: %f milliseconds\n", cpu_time_used);
     
-    printf("Output file: %s\n", outputFile);
+    // printf("Output file: %s\n", outputFile);
     writeResultsToFile(outputFile, arr, size);
+
+    printf("%lld %f\n", size, cpu_time_used * 1000.0);
+
 
     free(arr);
     
