@@ -5,10 +5,10 @@ gcc -Wall -O3 -march=native PrefixSumSerial.c -o PrefixSumSerial -lm
 for i in {1..50}
 do
     
-   # echo "Running Serial with size 2" 
+   # echo "Running Serial Mult"  
     srun ./PrefixSumSerial -s 2 -f prefixMult >>Serial/SerialSize_Mult.txt & disown
 
-    #echo "Running Serial with size 4"
+    
     srun ./PrefixSumSerial -s 4 -f prefixMult >>Serial/SerialSize_Mult.txt & disown
 
     
@@ -63,27 +63,27 @@ do
 
     srun ./PrefixSumSerial -s 67108864 -f prefixMult >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 134217728  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 134217728  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 268435456  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 268435456  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 536870912  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 536870912  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 1073741824  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 1073741824  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 2147483648  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 2147483648  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 4294967296  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 4294967296  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 8589934592  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 8589934592  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 17179869184  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 17179869184  >>Serial/SerialSize_Mult.txt & disown
     
-    # srun ./PrefixSumSerial -s 34359738368  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 34359738368  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 68719476736  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 68719476736  >>Serial/SerialSize_Mult.txt & disown
 
-    # srun ./PrefixSumSerial -s 137438953472  >>Serial/SerialSize_Mult.txt & disown
+    srun ./PrefixSumSerial -s 137438953472  >>Serial/SerialSize_Mult.txt & disown
 
     #echo 
 

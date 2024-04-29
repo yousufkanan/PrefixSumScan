@@ -10,7 +10,7 @@
 nvcc -arch=sm_86 -O3 --compiler-options -march=native PrefixSumCuda.cu -o PrefixSumCuda
 
 
-echo "Running Cuda Prefix Sum with float"
+echo "Running Cuda Prefix Sum with float" >>Cuda/Cudafloat.txt
 ./PrefixSumCuda -s 2   >>Cuda/Cudafloat.txt 
    
     

@@ -23,15 +23,26 @@
 #include <omp.h>
 
 void prefixSumShared(double *arr, int size, int numThreads) {
-    int size2 = ceil(log2(size));
-    size_t newArr* = malloc(size * sizeof(double));
-    for (int d = 1; d < size2; d++) {
-        int offset = 1 << d; // 2^d
-            #pragma omp parallel for num_threads(numThreads)
-            for (i =1; i < size / offset -1 ; i++) {
-                newArr[i] = newArr[]
-            }
-        
+    int max_depth = (int)ceil(log2(size));  // Calculate once and cast to integer
+
+    #pragma omp parallel for num_threads(numThreads)
+    for (int d = 0; d < max_depth; d++) {
+        int step = 1 << (d + 1);
+        for (int i = step - 1; i < size; i += step) {
+            arr[i] += arr[i - (step >> 1)];
+        }
+    }
+
+    // Reverse phase of the Blelloch scan
+    arr[size - 1] = 0; // Set last element to zero before reverse phase
+    for (int d = max_depth - 1; d >= 0; d--) {
+        int step = 1 << (d + 1);
+        #pragma omp parallel for num_threads(numThreads)
+        for (int i = step - 1; i < size; i += step) {
+            double temp = arr[i - (step >> 1)];
+            arr[i - (step >> 1)] = arr[i];
+            arr[i] += temp;
+        }
     }
 }
 
@@ -90,10 +101,11 @@ double *initializeArray(int size, unsigned int seed) {
         fprintf(stderr, "Memory allocation failed\n");
         exit(1);
     }
+    unsigned int rand_state = seed;
+
     srand(seed);
     for (int i = 0; i < size; i++) {
-          arr[i] = (double)rand() / (double)RAND_MAX * 2;
-      //    arr[i] = i;
+         arr[i] = (double)rand_r(&rand_state) / (double)RAND_MAX * 2;
     }
     return arr;
 }
@@ -119,7 +131,7 @@ void writeOutputFile(double *arr, long long size, char *outputFile)
 
 int main(int argc, char **argv)
 {
-    size_t size = 4194304;
+     long long size = 4194304;  
     unsigned int seed = (unsigned int)time(NULL);
     void (*function)(double *, int, int) = prefixSumShared;
     char *outputFile = "/dev/null";
