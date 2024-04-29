@@ -45,26 +45,31 @@ void prefixSumShared(double *arr, int size, int numThreads) {
         }
     }
 }
-
 void prefixMultShared(double *arr, int size, int numThreads) {
-    double *scratch = malloc(size * sizeof(double));
-    if (!scratch) {
-        fprintf(stderr, "Memory allocation failed for scratch buffer\n");
-        exit(EXIT_FAILURE);
-    }
-
-    memcpy(scratch, arr, size * sizeof(double));
+    int max_depth = (int)ceil(log2(size));  // Calculate once and cast to integer
 
     #pragma omp parallel for num_threads(numThreads)
-    for (int i = 1; i < size; i++) {
-        scratch[i] = scratch[i - 1] * arr[i];
+    for (int d = 0; d < max_depth; d++) {
+        int step = 1 << (d + 1);
+        for (int i = step - 1; i < size; i += step) {
+            arr[i] *= arr[i - (step >> 1)];
+        }
     }
 
-    memcpy(arr, scratch, size * sizeof(double));
-    free(scratch);
+    // Reverse phase of the Blelloch scan
+    arr[size - 1] = 1; // Set last element to one before reverse phase
+    for (int d = max_depth - 1; d >= 0; d--) {
+        int step = 1 << (d + 1);
+        #pragma omp parallel for num_threads(numThreads)
+        for (int i = step - 1; i < size; i += step) {
+            double temp = arr[i - (step >> 1)];
+            arr[i - (step >> 1)] = arr[i];
+            arr[i] *= temp;
+        }
+    }
 }
 
-
+// -s <size> : size of the array (default: 4194304) -r <seed> : seed for the random number generator (default: current time) -f <function> : function to execute (prefixSum or prefixMult, default: prefixSum) -o <outputFile> : output file to write the results (default: /dev/null) -i <inputFile> : input file to read the array from (default: /dev/null) -t <threads> : number of threads to use (default: 8)
 void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, void (**function)(double *, int, int), char **outputFile, char **inputFile, int *threads)
 {
      for (int i = 1; i < argc; i++){

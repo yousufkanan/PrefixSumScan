@@ -20,12 +20,14 @@ do
     ./PrefixSumCuda -s 4 -t double  >>Cuda/CudaSize_double.txt 
 
     ./PrefixSumCuda -s 8  >>Cuda/Cudafloat.txt 
-     ./PrefixSumCuda -s 8 -t double  >>Cuda/CudaSize_double.txt 
+    ./PrefixSumCuda -s 8 -t double  >>Cuda/CudaSize_double.txt 
 
-     ./PrefixSumCuda -s 16  >>Cuda/Cudafloat.txt 
-     ./PrefixSumCuda -s 16 -t double  >>Cuda/CudaSize_double.txt 
+    ./PrefixSumCuda -s 16  >>Cuda/Cudafloat.txt 
+    ./PrefixSumCuda -s 16 -t double  >>Cuda/CudaSize_double.txt 
 
-     ./PrefixSumCuda -s 32  >>Cuda/Cudafloat.txt 
-     ./PrefixSumCuda -s 32 -t double  >>Cuda/CudaSize_double.txt 
+    ./PrefixSumCuda -s 32  >>Cuda/Cudafloat.txt 
+    ./PrefixSumCuda -s 32 -t double  >>Cuda/CudaSize_double.txt 
+
+
     
 done
