@@ -1,13 +1,69 @@
 ---
-title: "Final Project Analysis" 
+title: "Final Project Analysis"
 author: "Yousuf Kanan and Derek Allmon"
-output: html_notebook
+output: pdf_document
+
 ---
 
 ```{r include=FALSE}
 library(tidyverse)
 library(infer)
 ```
+
+## Serial 
+
+```{r include=FALSE}
+# Load the data
+serialMult = read_csv("Serial/SerialSize_Mult.csv")
+serialMult$Time = as.double(serialMult$Time)
+serialMult$Size = as.double(serialMult$Size)
+serialAdd = read_csv("Serial/SerialSize.csv")
+serialAdd$Time = as.double(serialAdd$Time)
+serialAdd$Size = as.double(serialAdd$Size)
+```
+
+```{r echo=FALSE}
+serialAdd %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Serial Addition") + xlab("Size") + ylab("Time") + ylim(0, 50000) + xlim(0, 10000000)
+```
+
+```{r echo=FALSE}
+```
+
+```{r echo=FALSE}
+#ignore outliers
+serialMult %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Serial Multiplication") + xlab("Size") + ylab("Time") + ylim(0, 50000) + xlim(0, 10000000)
+```
+
+The graphs Serial Addition and Serial Multiplication show a linear relationship between the size and time. The slope of the line is steeper for the multiplication graph than the addition graph. This is because multiplication is more computationally expensive than addition. 
+
+
+## Shared
+```{r include=FALSE}
+# Load the data
+sharedAlgo1Add = read_csv("Shared/SharedAlgo1.csv")
+sharedAlgo1Add$Time = as.double(sharedAlgo1Add$Time)
+sharedAlgo1Add$Size = as.double(sharedAlgo1Add$Size)
+sharedAlgo1Mult = read_csv("Shared/SharedAlgo1_Mult.csv")
+sharedAlgo1Mult$Time = as.double(sharedAlgo1Mult$Time)
+sharedAlgo1Mult$Size = as.double(sharedAlgo1Mult$Size)
+```
+
+```{r echo=FALSE}
+sharedAlgo1Add %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Shared Algo 1 Addition") + xlab("Size") + ylab("Time") 
+```
+
+
+
+```{r echo=FALSE}
+sharedAlgo1Mult %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Shared Algo 1 Multiplication") + xlab("Size") + ylab("Time") 
+
+```
+
+The graphs Shared Algo 1 Addition and Shared Algo 1 Multiplication show a linear relationship between the size and time. The slope for shared is steeper than that of sloped because the algorithm being used for shared is not work efficient and gets even slower as the size increases. 
 
 ```{r include=FALSE}
 # Load the data
@@ -24,9 +80,19 @@ cudaDoubleAdd$Size = as.double(cudaDoubleAdd$Size)
 cudaDoubleMult = read_csv("Cuda/CudaSize_mult_double.csv")
 cudaDoubleMult$Time = as.double(cudaDoubleMult$Time)
 cudaDoubleMult$Size = as.double(cudaDoubleMult$Size)
+
+CudabuiltinFload = read_csv("Cuda/Cudafloat_builtin.csv")
+
+CudabuiltinFload$Time = as.double(CudabuiltinFload$Time)
+CudabuiltinFload$Size = as.double(CudabuiltinFload$Size)
+
+CudabuiltinDouble = read_csv("Cuda/CudaSize_builtin_double.csv")
+
+CudabuiltinDouble$Time = as.double(CudabuiltinDouble$Time)
+
+CudabuiltinDouble$Size = as.double(CudabuiltinDouble$Size)
+
 ```
-
-
 
 ```{r echo=FALSE}
 cudaFloatMult %>% ggplot(aes(x = Size, y = Time)) +
@@ -44,7 +110,8 @@ The two graphs Double Multiplication and Float Multiplication show a linear rela
 
 
 ```{r echo=FALSE, warning=FALSE}
-cudaFloatAdd %>% ggplot(aes(x = Size, y = Time)) +
+cudaFloatAdd %>% 
+  ggplot(aes(x = Size, y = Time)) +
   geom_point() + geom_smooth() + ggtitle("Float Addition") + xlab("Size") + ylab("Time")
 ```
 
@@ -62,5 +129,44 @@ The two graphs Double Addition and Float Addition show a linear relationship bet
 
 Although the float addition and multiplication are faster than the double addition and multiplication, the difference is not as significant as we expected. 
 
+```{r echo=FALSE}
+CudabuiltinFload %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Float Builtin Add") + xlab("Size") + ylab("Time")
+```
+
+```{r echo=FALSE}
+CudabuiltinDouble %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Double Builtin Add") + xlab("Size") + ylab("Time")
+
+```
+
+The graphs Double Built in Addition and Float Built in Addition show a logarithmic relationship between the size and time. The built-in addition is faster than the custom addition because the built-in addition is more efficient because it has had years of optimization.  Another potential reason for the difference in time is that the built-in addition was tested on different data than the custom addition. 
 
 
+
+```{r include=FALSE}
+#combnine the data for the shared and cuda and serial
+sharedAlgo1Add$Type = "Shared Algo 1 Addition"
+sharedAlgo1Mult$Type = "Shared Algo 1 Multiplication"
+cudaFloatMult$Type = "Float Multiplication"
+cudaFloatAdd$Type = "Float Addition"
+cudaDoubleAdd$Type = "Double Addition"
+cudaDoubleMult$Type = "Double Multiplication"
+CudabuiltinFload$Type = "Float Builtin Addition"
+CudabuiltinDouble$Type = "Double Builtin Addition"
+allData = rbind(sharedAlgo1Add, sharedAlgo1Mult, cudaFloatMult, cudaFloatAdd, cudaDoubleAdd, cudaDoubleMult, CudabuiltinFload, CudabuiltinDouble)
+```
+
+```{r echo=FALSE}
+allData %>% ggplot(aes(x = Size, y = Time, color = Type)) +
+  geom_point() + geom_smooth() + ggtitle("All Data") + xlab("Size") + ylab("Time")
+
+
+allData %>%
+  filter(Type != "Shared Algo 1 Addition" & Type != "Shared Algo 1 Multiplication") %>%
+  ggplot(aes(x = Size, y = Time, color = Type)) + geom_point() + geom_smooth() + ggtitle("All Data without Shared") + xlab("Size") + ylab("Time")
+```
+
+The first graph shows all the data and the second graph shows all the data without the shared data. The graphs show that the shared data is not as efficient as the other data. The shared data is not as efficient as the other data because the shared data is not work efficient and gets even slower as the size increases. 
+
+Lookng at the data we can say that shared has negative parallelism and the cuda portion is the most efficient. 
