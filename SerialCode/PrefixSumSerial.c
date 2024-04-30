@@ -18,14 +18,14 @@
 #include <string.h>
 #include <time.h>
 
-void prefixSum(double *arr, int size) {
-    for (int i = 1; i < size; i++) {
+void prefixSum(double *arr, size_t size) {
+    for (size_t i = 1; i < size; i++) {
         arr[i] += arr[i - 1];
     }
 }
 
-void prefixMult(double *arr, int size) {
-    for (int i = 1; i < size; i++) {
+void prefixMult(double *arr, size_t size) {
+    for (size_t i = 1; i < size; i++) {
         arr[i] *= arr[i - 1];
     }
 }
@@ -135,7 +135,7 @@ void writeResultsToFile(const char *filename, double *arr, int size) {
  * Initializes an array, executes a function on the array, and writes the results to a file.
  */
 int main(int argc, char **argv) {
-    unsigned long long size = 4194304;
+    size_t size = 4194304;
     unsigned int seed = (unsigned int)time(NULL);
     void (*function)(double *, int) = prefixSum;
     char *outputFile = "/dev/null";
