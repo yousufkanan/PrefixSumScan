@@ -84,14 +84,7 @@ do
 
      ./PrefixSumSerial -s 4294967296  >>Serial/SerialSize_Add.txt 
 
-     ./PrefixSumSerial -s 8589934592  >>Serial/SerialSize_Add.txt 
-
-     ./PrefixSumSerial -s 17179869184  >>Serial/SerialSize_Add.txt 
-    
-     ./PrefixSumSerial -s 34359738368  >>Serial/SerialSize_Add.txt 
-
-     ./PrefixSumSerial -s 68719476736  >>Serial/SerialSize_Add.txt 
-
+   
     #echo 
 
 done
