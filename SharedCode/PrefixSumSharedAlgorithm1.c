@@ -22,7 +22,7 @@
 #include <math.h>
 #include <omp.h>
 
-void prefixSumShared(double *arr, int size, int numThreads) {
+void prefixSumShared(double *arr, long long size, int numThreads) {
     double* output = (double*)malloc(size * sizeof(double));
     if (output == NULL) {
         // Handle memory allocation failure if needed
@@ -31,11 +31,11 @@ void prefixSumShared(double *arr, int size, int numThreads) {
 
     int steps = (int)ceil(log2(size)); // Use ceil to handle non-power of two sizes
 
-    for (int i = 0; i < steps; i++) {
+    for (long long i = 0; i < steps; i++) {
         int powerOfTwo = 1 << i; // Compute 2^i once for use in the loop
 
         #pragma omp parallel for num_threads(numThreads) default(none) shared(arr, output, size, powerOfTwo)
-        for (int j = 0; j < size; j++) {
+        for (long long j = 0; j < size; j++) {
             if (j < powerOfTwo) {
                 output[j] = arr[j];
             } else {
@@ -54,12 +54,12 @@ void prefixSumShared(double *arr, int size, int numThreads) {
         memcpy(arr, output, size * sizeof(double));
     }
 
- //  free(output); // Free the allocated memory for output
+   free(output); // Free the allocated memory for output
 }
 
      //copy the output array to the arr array}
 
-void prefixMultShared(double *arr, int size, int numThreads)
+void prefixMultShared(double *arr, long long  size, int numThreads)
 {
       double* output = (double*)malloc(size * sizeof(double));
     if (output == NULL) {
@@ -69,11 +69,11 @@ void prefixMultShared(double *arr, int size, int numThreads)
 
     int steps = (int)ceil(log2(size)); // Use ceil to handle non-power of two sizes
 
-    for (int i = 0; i < steps; i++) {
+    for (long long i = 0; i < steps; i++) {
         int powerOfTwo = 1 << i; // Compute 2^i once for use in the loop
 
         #pragma omp parallel for num_threads(numThreads) default(none) shared(arr, output, size, powerOfTwo)
-        for (int j = 0; j < size; j++) {
+        for (long long j = 0; j < size; j++) {
             if (j < powerOfTwo) {
                 output[j] = arr[j];
             } else {
@@ -93,7 +93,8 @@ void prefixMultShared(double *arr, int size, int numThreads)
     }
 }
 
-void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, void (**function)(double *, int, int), char **outputFile, char **inputFile, int *threads)
+void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, void (**function)(double *, long long, int), char **outputFile, char **inputFile, int *threads)
+
 {
      for (int i = 1; i < argc; i++){
           if (strcmp(argv[i], "-s") == 0 && i + 1 < argc) {
@@ -123,7 +124,7 @@ void parseArguments(int argc, char **argv, long long *size, unsigned int *seed, 
      }
 }
 
-double *initializeArray(int size, unsigned int seed) {
+double *initializeArray(long long size, unsigned int seed) {
     double *arr = (double *)malloc(size * sizeof(double));
     if (!arr) {
         fprintf(stderr, "Memory allocation failed\n");
@@ -149,7 +150,7 @@ void writeOutputFile(double *arr, long long size, char *outputFile)
           fprintf(stderr, "Failed to open output file\n");
           exit(1);
      }
-     for (int i = 0; i < size; i++)
+     for (long long i = 0; i < size; i++)
      {
           fprintf(file, "%lf\n", arr[i]);
      }
@@ -160,7 +161,7 @@ int main(int argc, char **argv)
 {
      long long size = 4194304;
      unsigned int seed = (unsigned int)time(NULL);
-     void (*function)(double *, int, int) = prefixSumShared;
+     void (*function)(double *, long long, int) = prefixSumShared;
      char *outputFile = "/dev/null";
      char *inputFile = "/dev/null";
      int threads = 8;

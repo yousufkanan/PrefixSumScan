@@ -44,7 +44,7 @@ inline void checkCudaError(cudaError_t code, const char *file, int line, bool ab
 }
 
 template <typename T>
-__global__ void prefixOperationKernel(T *data, int n, bool isMultiplication) {
+__global__ void prefixOperationKernel(T *data, long long n, bool isMultiplication) {
     extern __shared__ char shared_base[];
     T* shared = reinterpret_cast<T*>(shared_base);
 
@@ -89,10 +89,10 @@ __global__ void prefixOperationKernel(T *data, int n, bool isMultiplication) {
 
 
 template <typename T>
-T *initializeArray(int size, unsigned int seed) {
+T *initializeArray(long long size, unsigned int seed) {
     T *arr = new T[size];
     srand(seed);
-    for (int i = 0; i < size; i++) {
+    for (long long i = 0; i < size; i++) {
         arr[i] = T(rand()) / T(RAND_MAX) * 2.0;
     }
     return arr;
