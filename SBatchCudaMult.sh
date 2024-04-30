@@ -2,8 +2,6 @@
 #SBATCH  -p gpu-shared --exclusive
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=4G
 #SBATCH -t 02:00:00
 #SBATCH -o %x.%j.out
 #SBATCH -e %x.%j.err
