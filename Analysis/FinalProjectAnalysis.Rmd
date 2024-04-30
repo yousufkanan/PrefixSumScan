@@ -1,13 +1,66 @@
 ---
-title: "R Notebook"
+title: "Final Project Analysis" 
+author: "Yousuf Kanan and Derek Allmon"
 output: html_notebook
 ---
 
-```{r}
+```{r include=FALSE}
 library(tidyverse)
+library(infer)
 ```
 
-```{r}
+```{r include=FALSE}
+# Load the data
+cudaFloatMult = read_csv("Cuda/Cudafloat_mult.csv")
+#make sure to change both variables to doubles
+cudaFloatMult$Time = as.double(cudaFloatMult$Time)
+cudaFloatMult$Size = as.double(cudaFloatMult$Size)
+cudaFloatAdd = read_csv("Cuda/CudaFloat.csv")
+cudaFloatAdd$Time = as.double(cudaFloatAdd$Time)
+cudaFloatAdd$Size = as.double(cudaFloatAdd$Size)
+cudaDoubleAdd = read_csv("Cuda/CudaSize_double.csv")
+cudaDoubleAdd$Time = as.double(cudaDoubleAdd$Time)
+cudaDoubleAdd$Size = as.double(cudaDoubleAdd$Size)
+cudaDoubleMult = read_csv("Cuda/CudaSize_mult_double.csv")
+cudaDoubleMult$Time = as.double(cudaDoubleMult$Time)
+cudaDoubleMult$Size = as.double(cudaDoubleMult$Size)
+```
+
+
+
+```{r echo=FALSE}
+cudaFloatMult %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Float Multiplication") + xlab("Size") + ylab("Time")
+
+```
+
+
+```{r echo=FALSE}
+cudaDoubleMult %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Double Multiplication") + xlab("Size") + ylab("Time")
+```
+
+The two graphs Double Multiplication and Float Multiplication show a linear relationship between the size and time. As expected the float multiplication is faster than the double multiplication because the float multiplication is more efficient on a GPU.
+
+
+```{r echo=FALSE, warning=FALSE}
+cudaFloatAdd %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Float Addition") + xlab("Size") + ylab("Time")
+```
+
+```{r echo=FALSE}
+
+cudaDoubleAdd %>% ggplot(aes(x = Size, y = Time)) +
+  geom_point() + geom_smooth() + ggtitle("Double Addition") + xlab("Size") + ylab("Time")
 
 
 ```
+
+
+The two graphs Double Addition and Float Addition show a linear relationship between the size and time. As expected the float addition is faster than the double addition because the float addition is more efficient on a GPU.
+
+
+Although the float addition and multiplication are faster than the double addition and multiplication, the difference is not as significant as we expected. 
+
+
+
