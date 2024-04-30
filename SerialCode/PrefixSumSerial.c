@@ -42,7 +42,7 @@ void prefixMult(double *arr, size_t size) {
  * @param inputFile A pointer to a string variable to store the inputFile argument.
  * chat gpt was used to generate this function
  */
-void parseArguments(int argc, char **argv, unsigned long long *size, unsigned int *seed, void (**function)(double *, int), char **outputFile, char **inputFile) {
+void parseArguments(int argc, char **argv, size_t *size, unsigned int *seed, void (**function)(double *, int), char **outputFile, char **inputFile) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-s") == 0 && i + 1 < argc) {
             *size = atoll(argv[++i]);
@@ -98,7 +98,7 @@ double *initializeArray(size_t size, unsigned int seed) {
  * @return The time taken to execute the function in milliseconds.
  * found information on clock_gettime at stackoverflow.com
 */
-double executeFunction(double *arr, int size, void (*function)(double *, int)) {
+double executeFunction(double *arr, size_t size, void (*function)(double *, size_t)) {
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
     function(arr, size);
@@ -137,7 +137,7 @@ void writeResultsToFile(const char *filename, double *arr, int size) {
 int main(int argc, char **argv) {
     size_t size = 4194304;
     unsigned int seed = (unsigned int)time(NULL);
-    void (*function)(double *, int) = prefixSum;
+    void (*function)(double *, size_t) = prefixSum;
     char *outputFile = "/dev/null";
     char *inputFile = "/dev/null";
 
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
     // printf("Output file: %s\n", outputFile);
     writeResultsToFile(outputFile, arr, size);
 
-    printf("%lld %f\n", size, cpu_time_used);
+    printf("%llu , %f \n", size, cpu_time_used);
 
 
     free(arr);
