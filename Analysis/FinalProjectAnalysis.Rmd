@@ -118,7 +118,7 @@ cudaFloatAdd %>%
 ```{r echo=FALSE}
 
 cudaDoubleAdd %>% ggplot(aes(x = Size, y = Time)) +
-  geom_point() + geom_smooth() + ggtitle("Double Addition") + xlab("Size") + ylab("Time")
+  geom_point() + geom_smooth() + ggtitle("Double Addition") + xlab("Size") + ylab("Time") + xlim(0, 10000000) + ylim(0, 0.5)
 
 
 ```
@@ -170,3 +170,7 @@ allData %>%
 The first graph shows all the data and the second graph shows all the data without the shared data. The graphs show that the shared data is not as efficient as the other data. The shared data is not as efficient as the other data because the shared data is not work efficient and gets even slower as the size increases. 
 
 Lookng at the data we can say that shared has negative parallelism and the cuda portion is the most efficient. 
+
+It is importnt to ote that for the algorithms used above the number of threads is set to 8. 8 is the maximum number of threads on the mucluster and the number of threads is set to 8 to take most advatage of our algorithm. 
+
+```{r include=FALSE}
